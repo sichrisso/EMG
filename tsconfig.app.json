@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable", "WebWorker"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true /* 1. CHANGED TO FALSE: This stops unused variables from crashing your build */,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "noFallthroughCasesInSwitch": true,
+    "ignoreDeprecations": "5.0",
+    "paths": { "@/*": ["./src/*"] },
+
+    /* 2. ADDED: This teaches TypeScript what 'import.meta.env' and 'Worker' are */
+    "types": ["vite/client"]
+  },
+  "include": ["src"]
+}

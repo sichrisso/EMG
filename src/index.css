@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-surface-soft font-sans text-ink antialiased;
+  }
+
+  input,
+  select,
+  textarea {
+    @apply w-full rounded-xl border border-surface-border bg-white px-4 py-3
+           text-sm text-ink outline-none transition-all placeholder:text-ink-subtle;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    @apply border-navy/40 ring-2 ring-navy/10;
+  }
+}
+
+@layer utilities {
+  .card {
+    @apply rounded-2xl border border-surface-border bg-white shadow-card;
+  }
+  .eyebrow {
+    @apply text-xs font-black uppercase tracking-widest text-gold-dark;
+  }
+}
+
+/* ── Dark mode ────────────────────────────────────────────────────────────────
+   Inversion-based dark theme: one rule flips the whole light design system to
+   dark, and media elements are flipped back so photos stay true. */
+html.dark {
+  /* Ink Wash: invert(0.855) maps #FFFFFF → #252525 and ink → ~#CFCFCF, with
+     the mid tones settling into the #545454–#7D7D7D band. The desaturation
+     pulls the pewter day palette toward true monochrome ink. */
+  filter: invert(0.855) hue-rotate(180deg) saturate(0.4);
+  background: #252525;
+  color-scheme: dark;
+}
+html.dark img,
+html.dark video,
+html.dark iframe,
+html.dark svg image {
+  filter: saturate(2.5) invert(1) hue-rotate(180deg);
+}
+
+/* ── Signature slate gradient (#334155 → #0F172A) ─────────────────────────────
+   The login panel's gradient, carried through the app as card frames and
+   accent bars so every page shares the same identity moment. */
+.frame-slate {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(180deg, #334155, #0F172A) border-box;
+}
+.bar-slate {
+  background: linear-gradient(90deg, #334155, #0F172A);
+}
+
+.bar-gold {
+  background: linear-gradient(90deg, #E3B23C, #C99732);
+}
+
+/* Dark mode: the road's lane dashes must stay light. The page inverts, so a
+   dark source stroke renders as the light grey of the Ink Wash palette. */
+html.dark .road-dash {
+  stroke: #333333;
+}
