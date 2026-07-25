@@ -114,13 +114,14 @@ export async function POST(req: Request): Promise<Response> {
     currency: order.currency,
     email: profile?.email ?? user.email,
     first_name: profile?.first_name || "Student",
-    last_name: profile?.last_name || "",
+    last_name: profile?.last_name || "Applicant",
     tx_ref: txRef,
     callback_url: `${siteUrl}/api/chapa-webhook`,
     return_url: `${siteUrl}/services/mock-interview?paid=1`,
     customization: {
-      title: "EMG mock interview",
-      description: `${order.minutes} minute visa interview practice`,
+      // Chapa caps title at 16 characters and rejects anything longer.
+      title: "Mock interview",
+      description: `${order.minutes} min interview practice`,
     },
   };
 
@@ -141,17 +142,14 @@ export async function POST(req: Request): Promise<Response> {
 
   const chapaBody = (await chapaRes.json()) as {
     status?: string;
-    message?: string;
+    message?: unknown;
     data?: { checkout_url?: string };
   };
 
   if (!chapaRes.ok || !chapaBody?.data?.checkout_url) {
+    const detail = flattenChapaMessage(chapaBody?.message);
     // Log the detail server-side; don't leak provider internals to the browser.
-    console.error(
-      "checkout: chapa rejected",
-      chapaRes.status,
-      chapaBody?.message,
-    );
+    console.error("checkout: chapa rejected", chapaRes.status, detail);
     return json(
       {
         error: "Could not start payment",
@@ -159,13 +157,31 @@ export async function POST(req: Request): Promise<Response> {
         // Chapa's own validation message, e.g. an unverified account or a
         // currency the account cannot accept. Safe to show: it is about our
         // configuration, not the customer.
-        detail: chapaBody?.message ?? null,
+        detail,
       },
       502,
     );
   }
 
   return json({ url: chapaBody.data.checkout_url }, 200);
+}
+
+/**
+ * Chapa returns `message` as either a string or an object of field errors,
+ * e.g. { email: ["The email field is required."] }. Reduce either to one line.
+ */
+function flattenChapaMessage(message: unknown): string | null {
+  if (!message) return null;
+  if (typeof message === "string") return message;
+  if (typeof message === "object") {
+    const parts: string[] = [];
+    for (const value of Object.values(message as Record<string, unknown>)) {
+      if (Array.isArray(value)) parts.push(value.join(" "));
+      else if (value != null) parts.push(String(value));
+    }
+    return parts.join(" ") || JSON.stringify(message);
+  }
+  return String(message);
 }
 
 function json(body: unknown, status: number): Response {
