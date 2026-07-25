@@ -35,9 +35,19 @@ export async function POST(req: Request): Promise<Response> {
   const serviceRole = process.env.SUPABASE_SERVICE_ROLE;
   const siteUrl = process.env.PUBLIC_SITE_URL;
 
-  if (!secretKey || !supabaseUrl || !serviceRole || !siteUrl) {
-    console.error("checkout: missing environment configuration");
-    return json({ error: "Payment is not configured" }, 500);
+  const missing = [
+    !secretKey && "CHAPA_SECRET_KEY",
+    !supabaseUrl && "SUPABASE_URL",
+    !serviceRole && "SUPABASE_SERVICE_ROLE",
+    !siteUrl && "PUBLIC_SITE_URL",
+  ].filter(Boolean);
+
+  if (missing.length) {
+    console.error("checkout: missing env vars:", missing.join(", "));
+    return json(
+      { error: "Payment is not configured", code: "missing_env", missing },
+      500,
+    );
   }
 
   // ── Who is calling? Trust the JWT, not the request body ──────────────────
@@ -51,7 +61,8 @@ export async function POST(req: Request): Promise<Response> {
 
   const { data: userData, error: userErr } = await admin.auth.getUser(token);
   if (userErr || !userData?.user) {
-    return json({ error: "Not signed in" }, 401);
+    console.error("checkout: token rejected", userErr?.message);
+    return json({ error: "Not signed in", code: "auth" }, 401);
   }
   const user = userData.user;
 
@@ -66,12 +77,18 @@ export async function POST(req: Request): Promise<Response> {
 
   const { data: order, error: orderErr } = await admin
     .from("mock_interview_orders")
-    .select("id, mentee_id, plan_code, minutes, amount_cents, currency, status, tx_ref")
+    .select(
+      "id, mentee_id, plan_code, minutes, amount_cents, currency, status, tx_ref",
+    )
     .eq("id", body.order_id)
     .single<OrderRow>();
 
-  if (orderErr || !order) return json({ error: "Order not found" }, 404);
-  if (order.mentee_id !== user.id) return json({ error: "Not your order" }, 403);
+  if (orderErr || !order) {
+    console.error("checkout: order lookup failed", orderErr?.message);
+    return json({ error: "Order not found", code: "no_order" }, 404);
+  }
+  if (order.mentee_id !== user.id)
+    return json({ error: "Not your order" }, 403);
   if (order.status === "paid") return json({ error: "Already paid" }, 409);
 
   // ── A stable, unique reference we can match the webhook against ──────────
@@ -130,8 +147,22 @@ export async function POST(req: Request): Promise<Response> {
 
   if (!chapaRes.ok || !chapaBody?.data?.checkout_url) {
     // Log the detail server-side; don't leak provider internals to the browser.
-    console.error("checkout: chapa rejected", chapaRes.status, chapaBody?.message);
-    return json({ error: "Could not start payment" }, 502);
+    console.error(
+      "checkout: chapa rejected",
+      chapaRes.status,
+      chapaBody?.message,
+    );
+    return json(
+      {
+        error: "Could not start payment",
+        code: "provider",
+        // Chapa's own validation message, e.g. an unverified account or a
+        // currency the account cannot accept. Safe to show: it is about our
+        // configuration, not the customer.
+        detail: chapaBody?.message ?? null,
+      },
+      502,
+    );
   }
 
   return json({ url: chapaBody.data.checkout_url }, 200);

@@ -70,17 +70,45 @@ export async function startCheckout(orderId: string): Promise<void> {
       "Online payment is not switched on yet. Your booking is saved and our team will reach out with payment details.",
     );
   }
-  if (!res.ok) {
-    throw new Error(
-      "Payment could not be started. Your booking is saved, please contact our team.",
-    );
+
+  // Read the body once; it carries a diagnostic code on failure.
+  let data: Partial<CheckoutResult> & {
+    code?: string;
+    missing?: string[];
+    detail?: string | null;
+  } = {};
+  try {
+    data = await res.json();
+  } catch {
+    /* fall through to the generic message below */
   }
 
-  const data = (await res.json()) as Partial<CheckoutResult>;
-  if (!data.url) {
-    throw new Error(
-      "Payment could not be started. Your booking is saved, please contact our team.",
-    );
+  if (!res.ok || !data.url) {
+    // The booking is already saved either way, so the customer-facing half of
+    // every message says so. The operator-facing half names what to fix, which
+    // is otherwise invisible without reading Vercel's function logs.
+    const saved = "Your booking is saved, our team will be in touch.";
+
+    switch (data.code) {
+      case "missing_env":
+        throw new Error(
+          `Payment is not configured yet (missing: ${(data.missing ?? []).join(", ")}). ${saved}`,
+        );
+      case "auth":
+        throw new Error(
+          `Please sign out and back in, then try again. ${saved}`,
+        );
+      case "no_order":
+        throw new Error(`We could not find that booking. ${saved}`);
+      case "provider":
+        throw new Error(
+          data.detail
+            ? `The payment provider refused the request: ${data.detail}. ${saved}`
+            : `The payment provider refused the request. ${saved}`,
+        );
+      default:
+        throw new Error(`Payment could not be started. ${saved}`);
+    }
   }
 
   window.location.href = data.url;

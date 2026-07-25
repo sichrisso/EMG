@@ -943,10 +943,15 @@ function MentorHome() {
                     to="/mentor/dashboard"
                     className="min-w-0 flex-1 sm:flex-initial"
                   >
-                    <Button className="w-full">Go to dashboard</Button>
+                    <Button className="w-full !px-3 text-xs sm:!px-5 sm:text-sm">
+                      Go to dashboard
+                    </Button>
                   </Link>
                   <Link to="/events" className="min-w-0 flex-1 sm:flex-initial">
-                    <Button variant="secondary" className="w-full">
+                    <Button
+                      variant="secondary"
+                      className="w-full !px-3 text-xs sm:!px-5 sm:text-sm"
+                    >
                       Browse events
                     </Button>
                   </Link>
