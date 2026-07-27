@@ -198,7 +198,7 @@ export function EventForm({
           </p>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-sm font-semibold text-ink">
             Type
@@ -217,7 +217,7 @@ export function EventForm({
           {...register("duration_min")}
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Input
           label="Date & time"
           type="datetime-local"
@@ -958,7 +958,7 @@ export default function MentorDashboardPage() {
 
   if (!profile || !mentorProfile) return <PageSpinner />;
 
-  const myId = mentorProfile.id;
+  const myId = mentorProfile.id; // service_requests.mentor_id references mentor_profiles.id
   const mine = requests.filter((r) => r.mentor_id === myId);
   const pending = mine.filter((r) => r.status === "pending");
   const active = mine.filter((r) => r.status === "approved");
@@ -996,6 +996,44 @@ export default function MentorDashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#5C7E8F]/25 via-[#D4DDE2]/60 to-white pt-14">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        {/* New-assignment notification, the first thing a mentor sees */}
+        {pending.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setTab("requests")}
+            className="mb-6 flex w-full items-center gap-3 rounded-2xl border border-gold/40 bg-gold-soft px-5 py-4 text-left shadow-card transition hover:shadow-md"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold text-ink">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-black text-ink">
+                {pending.length === 1
+                  ? "You have a new student request"
+                  : `You have ${pending.length} new student requests`}
+              </span>
+              <span className="block text-xs text-ink-muted">
+                A mentee has been assigned to you. Review and respond so they
+                can book a session.
+              </span>
+            </span>
+            <span className="shrink-0 text-sm font-black text-gold-dark">
+              Review →
+            </span>
+          </button>
+        )}
         {/* Header */}
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>

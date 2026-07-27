@@ -20,7 +20,6 @@ import {
 } from "../api";
 import { DAYS, MENTORSHIP_AREAS } from "@/types";
 
-
 // ─── Format time (24h → 12h) ──────────────────────────────────────────────
 function fmt12(t: string) {
   const [h, m] = t.split(":").map(Number);
@@ -250,12 +249,14 @@ export function RequestModal({
           </div>
 
           {/* Share the document when the request is about reviewing one. */}
-          <div className={cn(
-            "rounded-2xl border p-4 transition",
-            wantsDocument
-              ? "border-gold/40 bg-gold-soft/40"
-              : "border-surface-border bg-cloud",
-          )}>
+          <div
+            className={cn(
+              "rounded-2xl border p-4 transition",
+              wantsDocument
+                ? "border-gold/40 bg-gold-soft/40"
+                : "border-surface-border bg-cloud",
+            )}
+          >
             <label className="block text-sm font-semibold text-ink">
               {wantsDocument
                 ? "Share the document you'd like reviewed"
@@ -321,7 +322,9 @@ export function RequestModal({
                   {appCount > 0 ? "✓" : "•"} Add at least one university in your
                   journey (this sets your stage automatically).
                 </li>
-                <li className={p?.target_degree ? "line-through opacity-60" : ""}>
+                <li
+                  className={p?.target_degree ? "line-through opacity-60" : ""}
+                >
                   {p?.target_degree ? "✓" : "•"} Set what you're applying for in
                   your profile (Bachelor's, Master's, PhD…).
                 </li>
@@ -329,12 +332,16 @@ export function RequestModal({
               <div className="mt-2 flex flex-wrap gap-2">
                 {appCount === 0 && (
                   <Link to="/journey">
-                    <Button size="sm" variant="secondary">Add a university</Button>
+                    <Button size="sm" variant="secondary">
+                      Add a university
+                    </Button>
                   </Link>
                 )}
                 {!p?.target_degree && (
                   <Link to="/profile">
-                    <Button size="sm" variant="secondary">Set in profile</Button>
+                    <Button size="sm" variant="secondary">
+                      Set in profile
+                    </Button>
                   </Link>
                 )}
               </div>
@@ -346,7 +353,9 @@ export function RequestModal({
               type="submit"
               className="flex-1"
               disabled={isSubmitting || send.isPending || !profileReady}
-              title={!profileReady ? "Complete your profile to send a request" : ""}
+              title={
+                !profileReady ? "Complete your profile to send a request" : ""
+              }
             >
               {send.isPending ? "Sending…" : "Send request"}
             </Button>
@@ -368,18 +377,41 @@ export function RequestModal({
 function MentorCardTile({ mentor }: { mentor: MentorCard }) {
   const navigate = useNavigate();
   return (
-    <div className="flex flex-col rounded-3xl border border-white/70 bg-white/85 p-5 shadow-card backdrop-blur-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <div
+      className={cn(
+        "flex flex-col rounded-3xl border p-5 shadow-card backdrop-blur-sm transition hover:-translate-y-0.5 hover:shadow-md",
+        mentor.isFeatured
+          ? "border-gold/50 bg-gold-soft/40 ring-1 ring-gold/40"
+          : "border-white/70 bg-white/85",
+      )}
+    >
+      {mentor.isFeatured && (
+        <div className="mb-3 flex items-center gap-2 rounded-xl bg-navy px-3 py-2 text-white">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z" />
+          </svg>
+          <span className="text-xs font-black">
+            Official EMG team · helps with everything, including mock interviews
+          </span>
+        </div>
+      )}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-lg font-black text-ink">
             {mentor.firstName} {mentor.lastName}
           </p>
           <p className="truncate text-sm text-ink-muted">{mentor.currentJob}</p>
-          <p className="truncate text-sm text-ink-muted">{mentor.currentLocation}</p>
+          <p className="truncate text-sm text-ink-muted">
+            {mentor.currentLocation}
+          </p>
         </div>
         {mentor.avatarUrl ? (
-          <img referrerPolicy="no-referrer" src={mentor.avatarUrl} alt={mentor.firstName}
-            className="h-16 w-16 shrink-0 rounded-2xl object-cover" />
+          <img
+            referrerPolicy="no-referrer"
+            src={mentor.avatarUrl}
+            alt={mentor.firstName}
+            className="h-16 w-16 shrink-0 rounded-2xl object-cover"
+          />
         ) : (
           <span className="block h-16 w-16 shrink-0 overflow-hidden rounded-2xl">
             <DefaultAvatar className="h-16 w-16" />
@@ -387,11 +419,16 @@ function MentorCardTile({ mentor }: { mentor: MentorCard }) {
         )}
       </div>
 
-      <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-muted">{mentor.bio}</p>
+      <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-muted">
+        {mentor.bio}
+      </p>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         {mentor.areas.slice(0, 3).map((a) => (
-          <span key={a} className="rounded-full bg-surface-soft px-2.5 py-1 text-[11px] font-bold text-ink-muted ring-1 ring-surface-border">
+          <span
+            key={a}
+            className="rounded-full bg-surface-soft px-2.5 py-1 text-[11px] font-bold text-ink-muted ring-1 ring-surface-border"
+          >
             {a}
           </span>
         ))}
@@ -407,7 +444,10 @@ function MentorCardTile({ mentor }: { mentor: MentorCard }) {
           {mentor.avgRating > 0 ? (
             <>
               <span className="text-gold">★</span> {mentor.avgRating.toFixed(1)}
-              <span className="font-semibold text-ink-muted"> · {mentor.totalSessions} sessions</span>
+              <span className="font-semibold text-ink-muted">
+                {" "}
+                · {mentor.totalSessions} sessions
+              </span>
             </>
           ) : (
             <span className="font-semibold text-ink-muted">New mentor</span>
@@ -417,7 +457,10 @@ function MentorCardTile({ mentor }: { mentor: MentorCard }) {
       </div>
 
       <div className="mt-4 flex items-stretch justify-between gap-2">
-        <Button size="sm" onClick={() => navigate(`/mentors/${mentor.mentorProfileId}`)}>
+        <Button
+          size="sm"
+          onClick={() => navigate(`/mentors/${mentor.mentorProfileId}`)}
+        >
           View profile →
         </Button>
         {!mentor.isAvailable ? (
@@ -465,7 +508,6 @@ export default function MentorsPage() {
 
   return (
     <div className="pb-4">
-
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="mb-6 space-y-3">
           <input
@@ -548,9 +590,12 @@ export default function MentorsPage() {
             </div>
             {(mentors ?? []).length > visibleCount && (
               <div className="mt-6 text-center">
-                <Button variant="secondary"
-                  onClick={() => setVisibleCount((c) => c + 9)}>
-                  Load more mentors ({(mentors ?? []).length - visibleCount} remaining)
+                <Button
+                  variant="secondary"
+                  onClick={() => setVisibleCount((c) => c + 9)}
+                >
+                  Load more mentors ({(mentors ?? []).length - visibleCount}{" "}
+                  remaining)
                 </Button>
               </div>
             )}
